@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
 import { useBetContext } from "../context/useBetContext";
 
-const useBet = (betAmount, setBetAmount) => {
-  const { balance, setBalance, setWin, setPayout } = useBetContext();
+const useBet = () => {
+  const { balance, setBalance, setWin, setPayout, betAmount, setBetAmount } =
+    useBetContext();
   const [myBet, setMyBet] = useState([]);
 
   const newBet = ({ id, bet, amount }) => {
@@ -55,11 +56,6 @@ const useBet = (betAmount, setBetAmount) => {
   }, []);
 
   const checkWin = (bet, winningNumber, selectedNumber) => {
-    console.log("FromcheckWinBet", bet);
-    console.log("FromcheckWinwinningNumber", winningNumber);
-
-    console.log("FromcheckWinselectedNumber", selectedNumber);
-
     let winAmount = 0;
 
     if (selectedNumber === winningNumber) {
@@ -149,7 +145,6 @@ const useBet = (betAmount, setBetAmount) => {
     ) {
       winAmount = bet * 3;
     }
-    console.log("fromwinAmountCheck", winAmount);
     return winAmount;
   };
 
