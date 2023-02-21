@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import useBet from "../utils/hook/useBet";
 import rouletteWheelNumbers from "../utils/helpers/rouletteWheelNumbers";
+import { useBetContext } from "../utils/context/useBetContext";
 
 const BetButton = ({ title, onPress }) => (
   <TouchableOpacity
@@ -21,15 +22,37 @@ const BetButton = ({ title, onPress }) => (
 
 const BetScreen = ({ selectedReward, spinWheel }) => {
   const {
-    win,
-    payout,
-    myBet,
-    newBet,
     betAmount,
-    clearBets,
-    onBetPress,
+    setBetAmount,
     balance,
-  } = useBet(spinWheel, selectedReward);
+    setBalance,
+    win,
+    setWin,
+    payout,
+    setPayout,
+    clearBets,
+  } = useBetContext();
+  const { myBet, newBet } = useBet(
+    betAmount,
+    setBetAmount,
+    balance,
+    setBalance,
+    win,
+    setWin,
+    payout,
+    setPayout,
+    clearBets
+  );
+
+  const [currentBalance, setCurrentBalance] = useState(balance);
+  const [currentWin, setCurrentWin] = useState(win);
+  const [currentPayout, setCurrentPayout] = useState(payout);
+
+  useEffect(() => {
+    setCurrentBalance(balance);
+    setCurrentWin(win);
+    setCurrentPayout(payout);
+  }, [balance, win, payout]);
 
   const renderNumber = (number) => (
     <TouchableOpacity
@@ -50,13 +73,22 @@ const BetScreen = ({ selectedReward, spinWheel }) => {
 
   return (
     <View style={styles.container}>
-      <Text> Your balance: {balance}</Text>
-      {win !== null && (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultText}>{win ? "You won!" : "You lost"}</Text>
-          <Text style={styles.resultText}>Payout: {payout}</Text>
-        </View>
+      <Text style={styles.resultText}>Current Balance: {currentBalance}</Text>
+      {selectedReward && (
+        <>
+          <View style={styles.resultContainer}>
+            <Text style={styles.resultText}>Bet Amount: {betAmount}</Text>
+
+            <Text style={styles.resultText}>
+              {currentWin ? "You Win!!" : "You lose!"}
+            </Text>
+            {currentWin && (
+              <Text style={styles.resultText}>Payout: {currentPayout}</Text>
+            )}
+          </View>
+        </>
       )}
+
       <View style={styles.betAmountContainer}>
         <Text style={styles.betAmountText}>Bet Amount:</Text>
         <Text style={styles.betAmountText}>{betAmount}</Text>
@@ -122,17 +154,26 @@ const BetScreen = ({ selectedReward, spinWheel }) => {
             })}
         </View>
       </View>
-      <TouchableOpacity onPress={onBetPress} style={styles.placeBetButton}>
-        <Text style={styles.placeBetButtonText}>Place Bet</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={clearBets} style={styles.clearButton}>
-        <Text style={styles.clearButtonText}>Clear</Text>
-      </TouchableOpacity>
+      <View style={styles.FlexContainerButton}>
+        <TouchableOpacity
+          onPress={() => spinWheel(myBet)}
+          style={styles.placeBetButton}
+        >
+          <Text style={styles.placeBetButtonText}>Place Bet</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={clearBets} style={styles.clearButton}>
+          <Text style={styles.clearButtonText}>Clear</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  FlexContainerButton: {
+    display: "flex",
+    flexDirection: "row",
+  },
   container: {
     flex: 1,
     alignItems: "center",

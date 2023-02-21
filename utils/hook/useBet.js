@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
+import { useBetContext } from "../context/useBetContext";
 
-const useBet = (spinWheel, selectedReward) => {
+const useBet = (betAmount, setBetAmount) => {
+  const { balance, setBalance, setWin, setPayout } = useBetContext();
   const [myBet, setMyBet] = useState([]);
-  const [betAmount, setBetAmount] = useState(0);
-  const [balance, setBalance] = useState(400);
-  const [win, setWin] = useState(null);
-  const [payout, setPayout] = useState(0);
 
   const newBet = ({ id, bet, amount }) => {
     if (!amount) {
       return;
     }
+
     setMyBet((prevMyBet) => {
       const existingBetIndex = prevMyBet.findIndex(
         (item) => item.id === id && item.bet === bet
@@ -32,47 +31,35 @@ const useBet = (spinWheel, selectedReward) => {
     setBetAmount((prev) => prev + amount);
   };
 
-  const clearBets = () => {
-    setMyBet([]);
-    setBetAmount(0);
-  };
+  const onBetPress = useCallback((selectedReward, myBet) => {
+    // Execute wheel spin
+    const winAmount = myBet
+      .map((bet) => checkWin(bet.amount, selectedReward.number, bet.bet))
+      .reduce((a, b) => a + b, 0);
 
-  const onBetPress = async () => {
-    await spinWheel();
-    if (selectedReward === null) return;
-    console.log("selectedReward", selectedReward.number);
-
-    try {
-      // Execute wheel spin
-      const winAmount = await myBet
-        .map((bet) => checkWin(bet.amount, `${selectedReward.number}`, bet.bet))
-        .reduce((a, b) => a + b, 0);
-      if (winAmount > 0) {
-        setBalance(balance + winAmount);
-        setWin(true);
-        setPayout(winAmount);
-        console.log("Gratulacje!", `Wygrales ${winAmount} monet!`, [
-          { text: "OK" },
-        ]);
-      } else {
-        setBalance(balance - betAmount);
-        setWin(false);
-        setPayout(0);
-        console.log("Przegrana", `Nie udalo sie wygrac. Sprobuj ponownie.`, [
-          { text: "OK" },
-        ]);
-      }
-    } catch (error) {
-      console.log(
-        "Blad",
-        `Wystapil blad podczas losowania. Sprobuj ponownie.`,
-        [{ text: "OK" }]
-      );
+    if (winAmount > 0) {
+      setBalance(parseFloat(balance) + parseFloat(winAmount));
+      setWin(true);
+      setPayout(winAmount);
+      console.log("Gratulacje!", `Wygrales ${winAmount} monet!`, [
+        { text: "OK" },
+      ]);
+    } else {
+      setBalance(parseFloat(balance) - parseFloat(betAmount));
+      setWin(false);
+      setPayout(0);
+      console.log("Przegrana", `Nie udalo sie wygrac. Sprobuj ponownie.`, [
+        { text: "OK" },
+      ]);
     }
-    await clearBets();
-  };
+  }, []);
 
   const checkWin = (bet, winningNumber, selectedNumber) => {
+    console.log("FromcheckWinBet", bet);
+    console.log("FromcheckWinwinningNumber", winningNumber);
+
+    console.log("FromcheckWinselectedNumber", selectedNumber);
+
     let winAmount = 0;
 
     if (selectedNumber === winningNumber) {
@@ -162,18 +149,19 @@ const useBet = (spinWheel, selectedReward) => {
     ) {
       winAmount = bet * 3;
     }
+    console.log("fromwinAmountCheck", winAmount);
     return winAmount;
   };
 
   return {
-    win,
-    payout,
+    // win,
+    // payout,
     myBet,
     newBet,
-    betAmount,
-    clearBets,
+    // betAmount,
+    // clearBets,
     onBetPress,
-    balance,
+    // balance,
   };
 };
 

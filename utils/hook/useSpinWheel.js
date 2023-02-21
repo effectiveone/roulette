@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Animated, Easing } from "react-native";
-
+import useBet from "./useBet";
 const useSpinWheel = (rewards) => {
+  const { onBetPress } = useBet();
   const [selectedReward, setSelectedReward] = useState(null);
   const [isWheelSpinning, setIsWheelSpinning] = useState(false);
   const [spinAngle, setSpinAngle] = useState(null);
+  const [myBetValue, setMyBetValue] = useState();
   const spinValue = useRef(new Animated.Value(0)).current;
 
   const spin = spinValue.interpolate({
@@ -12,7 +14,7 @@ const useSpinWheel = (rewards) => {
     outputRange: ["0deg", "360deg"],
   });
 
-  const spinWheel = () => {
+  const spinWheel = (myBet) => {
     if (isWheelSpinning) return;
 
     const spinDuration = 3000;
@@ -20,6 +22,7 @@ const useSpinWheel = (rewards) => {
     setSpinAngle(spinAngleDegrees);
 
     setIsWheelSpinning(true);
+    setMyBetValue(myBet);
   };
 
   const onEndAnimation = () => {
@@ -34,6 +37,7 @@ const useSpinWheel = (rewards) => {
     });
     setSelectedReward(selectedRewards);
     setIsWheelSpinning(false);
+    onBetPress(selectedRewards, myBetValue);
   };
 
   const wheelStyle = {
