@@ -32,7 +32,6 @@ const useSpinWheel = (rewards) => {
         selectedRewards = { color, number };
       }
     });
-    console.log(`selectedReward: ${selectedRewards}`);
     setSelectedReward(selectedRewards);
     setIsWheelSpinning(false);
   };
@@ -43,6 +42,7 @@ const useSpinWheel = (rewards) => {
     animationTimingFunction: "cubic-bezier(  0.95 , 0.55, 0.1,  0.045)",
     transform: `rotate(${spinAngle}deg)`,
     transformOrigin: "center",
+    position: "relative",
   };
 
   return {

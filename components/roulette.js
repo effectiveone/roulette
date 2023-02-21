@@ -10,6 +10,8 @@ import {
 import Svg, { Circle, Text as SvgText, Path } from "react-native-svg";
 import rouletteWheelNumbers from "../utils/helpers/rouletteWheelNumbers";
 import useSpinWheel from "../utils/hook/useSpinWheel";
+import useBall from "../utils/hook/useBall";
+
 import BetScreen from "./betScreen";
 const WheelOfFortune = () => {
   const {
@@ -21,7 +23,7 @@ const WheelOfFortune = () => {
     wheelStyle,
     spinAngle,
   } = useSpinWheel(rouletteWheelNumbers);
-  console.log("selectedReward", selectedReward);
+
   const renderWheelSection = (section, index, selectedNumber) => {
     const sweepAngle = 360 / rouletteWheelNumbers.length;
     const rotateAngle = index * sweepAngle;
@@ -37,7 +39,7 @@ const WheelOfFortune = () => {
       250 -
       labelRadius * Math.cos(((rotateAngle + sweepAngle / 2) * Math.PI) / 180);
 
-    const ballSize = 20;
+    const ballSize = 12;
     const ballX = 250 + 160 * Math.sin((rotateAngle * Math.PI) / 180);
     const ballY = 250 - 160 * Math.cos((rotateAngle * Math.PI) / 180);
     const ballPath = `M${
@@ -59,9 +61,35 @@ const WheelOfFortune = () => {
             fill={section.color}
             transform={`rotate(${rotateAngle}, 250, 250)`}
           />
-          {selectedNumber === section.number && !isWheelSpinning && (
-            <Path key={`${section.number}-ball`} d={ballPath} fill="white" />
-          )}
+
+          {selectedReward?.number
+            ? section.number === selectedReward?.number && (
+                <Path
+                  key={`${section.number}-ball`}
+                  style={[
+                    {
+                      position: "absolute",
+                      zIndex: 2,
+                    },
+                  ]}
+                  d={ballPath}
+                  fill="white"
+                  transform={`rotate(${360 - rotateAngle}, ${ballPath})`}
+                />
+              )
+            : section.number === 0 && (
+                <Path
+                  key={`${section.number}-ball`}
+                  style={{
+                    position: "absolute",
+                    zIndex: 2,
+                  }}
+                  d={ballPath}
+                  fill="white"
+                  transform={`rotate(${360 - rotateAngle}, ${ballPath})`}
+                />
+              )}
+
           <SvgText
             x={labelX}
             y={labelY}
@@ -78,15 +106,6 @@ const WheelOfFortune = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={{ ...styles.button, marginBottom: "-400px" }}
-        onPress={spinWheel}
-        disabled={isWheelSpinning}
-      >
-        <Text style={styles.buttonText}>
-          {isWheelSpinning ? "Kręcę..." : "Kręć kołem!"}
-        </Text>
-      </TouchableOpacity>
       <Svg width="100%" height="100%" viewBox="0 0 500 500">
         <Circle
           cx="250"
@@ -122,22 +141,20 @@ const WheelOfFortune = () => {
         </SvgText>
       </Svg>
 
-      <BetScreen />
+      <BetScreen selectedReward={selectedReward} spinWheel={spinWheel} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   centeredText: {
-    display: "flex",
     textAlign: "center",
-    alignItems: "center",
-    justifyContent: "center",
+
+    marginTop: "10px",
+    paddingTop: "10px",
   },
   container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    marginTop: "-350px",
   },
   button: {
     marginTop: 20,

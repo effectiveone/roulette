@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import useBet from "../utils/hook/useBet";
 import rouletteWheelNumbers from "../utils/helpers/rouletteWheelNumbers";
@@ -19,44 +19,28 @@ const BetButton = ({ title, onPress }) => (
   </TouchableOpacity>
 );
 
-const BetScreen = () => {
-  const [betAmount, setBetAmount] = useState(0);
-  const [selectedNumber, setSelectedNumber] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const { win, payout, placeBet } = useBet(
+const BetScreen = ({ selectedReward, spinWheel }) => {
+  const {
+    win,
+    payout,
+    myBet,
+    newBet,
     betAmount,
-    selectedNumber,
-    selectedColor
-  );
-
-  const onNumberPress = (number) => {
-    setSelectedNumber(number);
-    setSelectedColor(null);
-  };
-
-  const onColorPress = (color) => {
-    setSelectedColor(color);
-    setSelectedNumber(null);
-  };
-
-  const onBetPress = () => {
-    placeBet();
-  };
-
-  const onClearPress = () => {
-    setBetAmount(0);
-    setSelectedNumber(null);
-    setSelectedColor(null);
-  };
+    clearBets,
+    onBetPress,
+    balance,
+  } = useBet(spinWheel, selectedReward);
 
   const renderNumber = (number) => (
     <TouchableOpacity
       key={number}
       style={[
         styles.numberButton,
-        selectedNumber === number && styles.selectedNumberButton,
+        // selectedNumber === number && styles.selectedNumberButton,
       ]}
-      onPress={() => onNumberPress(number)}
+      // onPress={() => onNumberPress(number)}
+      onPress={() => newBet({ id: number, bet: number, amount: 10 })}
+      id={number}
     >
       <Text style={[styles.numberButtonText, { color: "white" }]}>
         {number}
@@ -64,24 +48,15 @@ const BetScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderColor = (color) => (
-    <TouchableOpacity
-      key={color}
-      style={[
-        styles.colorButton,
-        selectedColor === color && styles.selectedColorButton,
-      ]}
-      onPress={() => onColorPress(color)}
-    >
-      <Text style={[styles.colorButtonText, { color: "white" }]}>{color}</Text>
-    </TouchableOpacity>
-  );
-
   return (
     <View style={styles.container}>
-      {renderColor("green")}
-      {renderColor("black")}
-      {renderColor("red")}
+      <Text> Your balance: {balance}</Text>
+      {win !== null && (
+        <View style={styles.resultContainer}>
+          <Text style={styles.resultText}>{win ? "You won!" : "You lost"}</Text>
+          <Text style={styles.resultText}>Payout: {payout}</Text>
+        </View>
+      )}
       <View style={styles.betAmountContainer}>
         <Text style={styles.betAmountText}>Bet Amount:</Text>
         <Text style={styles.betAmountText}>{betAmount}</Text>
@@ -91,27 +66,43 @@ const BetScreen = () => {
           <BetButton
             style={{ gridRow: "1/2" }}
             title="Even"
-            onPress={() => onNumberPress("even")}
+            onPress={() => newBet({ id: "even", bet: "even", amount: 10 })}
+            id="even"
           />
-          <BetButton title="Odd" onPress={() => onNumberPress("odd")} />
-          <BetButton title="Black" onPress={() => onColorPress("black")} />
-          <BetButton title="Red" onPress={() => onColorPress("red")} />
+          <BetButton
+            title="Odd"
+            id="odd"
+            onPress={() => newBet({ id: "odd", bet: "odd", amount: 10 })}
+          />
+          <BetButton
+            title="Black"
+            id="black"
+            onPress={() => newBet({ id: "black", bet: "black", amount: 10 })}
+          />
+          <BetButton
+            title="Red"
+            id="red"
+            onPress={() => newBet({ id: "red", bet: "red", amount: 10 })}
+          />
         </View>
         <View style={styles.betButtonNumbersContainer}>
           <BetButton
             style={{ gridRow: "1/2" }}
             title="1-12"
-            onPress={() => onNumberPress("1-12")}
+            id="1-12"
+            onPress={() => newBet({ id: "1-12", bet: "1-12", amount: 10 })}
           />
           <BetButton
             style={[styles.betButton, { gridRow: "2/3" }]}
             title="13-24"
-            onPress={() => onNumberPress("13-24")}
+            id="13-24"
+            onPress={() => newBet({ id: "13-24", bet: "13-24", amount: 10 })}
           />
           <BetButton
             style={[styles.betButton, { gridRow: "3/4" }]}
             title="25-36"
-            onPress={() => onNumberPress("25-36")}
+            id="25-36"
+            onPress={() => newBet({ id: "25-36", bet: "25-36", amount: 10 })}
           />
         </View>
         <View style={styles.numbersContainer}>
@@ -134,16 +125,9 @@ const BetScreen = () => {
       <TouchableOpacity onPress={onBetPress} style={styles.placeBetButton}>
         <Text style={styles.placeBetButtonText}>Place Bet</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onClearPress} style={styles.clearButton}>
+      <TouchableOpacity onPress={clearBets} style={styles.clearButton}>
         <Text style={styles.clearButtonText}>Clear</Text>
       </TouchableOpacity>
-
-      {win !== null && (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultText}>{win ? "You won!" : "You lost"}</Text>
-          <Text style={styles.resultText}>Payout: {payout}</Text>
-        </View>
-      )}
     </View>
   );
 };
